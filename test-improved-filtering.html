@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Improved Health Expert System - Focused Results</title>
+    <link rel="stylesheet" href="frontend/css/styles.css">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        .test-title {
+            color: #2d3748;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .quick-test-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 0.9rem;
+        }
+        .quick-test-btn:hover {
+            background: #5a67d8;
+        }
+        .result-info {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-container">
+            <h1>🎯 Improved Health Expert System - Focused Results</h1>
+            <p>This system now shows only the most relevant advice based on your specific symptoms.</p>
+            
+            <div class="test-section">
+                <div class="test-title">Quick Tests - See the Difference</div>
+                <p>Click these buttons to test different symptom combinations and see how focused the results are:</p>
+                
+                <button class="quick-test-btn" onclick="testSymptoms(['Headache'])">
+                    Test: Single Symptom (Headache)
+                </button>
+                <button class="quick-test-btn" onclick="testSymptoms(['Headache', 'Fever'])">
+                    Test: Two Related (Headache + Fever)
+                </button>
+                <button class="quick-test-btn" onclick="testSymptoms(['Chest pain', 'Shortness of breath'])">
+                    Test: Serious Symptoms
+                </button>
+                <button class="quick-test-btn" onclick="testSymptoms(['Headache', 'Fatigue', 'Fever'])">
+                    Test: Common Combination
+                </button>
+                <button class="quick-test-btn" onclick="testSymptoms(['Cough', 'Runny nose'])">
+                    Test: Cold Symptoms
+                </button>
+                
+                <div id="test-results" class="result-info" style="display: none;"></div>
+            </div>
+            
+            <div class="test-section">
+                <div class="test-title">⚡ Key Improvements</div>
+                <ul>
+                    <li><strong>Stricter Filtering:</strong> Only shows advice with high relevance scores</li>
+                    <li><strong>Limited Results:</strong> Maximum 3 advice items to avoid overwhelming</li>
+                    <li><strong>Multi-symptom Matching:</strong> Prioritizes advice that matches multiple symptoms</li>
+                    <li><strong>Emergency Priority:</strong> Always shows emergency-level advice when relevant</li>
+                    <li><strong>Relevance Display:</strong> Shows why each advice is relevant to your symptoms</li>
+                </ul>
+            </div>
+            
+            <div class="test-section">
+                <div class="test-title">🔍 Full System Test</div>
+                <p>Use the full system interface to test with any combination of symptoms:</p>
+                <a href="frontend/index.html" target="_blank" style="display: inline-block; background: #48bb78; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                    Open Full Health Expert System
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/health-expert/backend/api';
+        let symptoms = [];
+        
+        // Load symptoms on page load
+        async function loadSymptoms() {
+            try {
+                const response = await fetch(`${API_BASE}/symptoms.php`);
+                const data = await response.json();
+                if (data.success) {
+                    symptoms = data.symptoms;
+                    console.log('Loaded', symptoms.length, 'symptoms');
+                }
+            } catch (error) {
+                console.error('Error loading symptoms:', error);
+            }
+        }
+        
+        async function testSymptoms(symptomNames) {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<p>🔄 Testing...</p>';
+            
+            try {
+                // Find symptom IDs
+                const symptomIds = symptomNames.map(name => {
+                    const symptom = symptoms.find(s => s.name.toLowerCase() === name.toLowerCase());
+                    return symptom ? symptom.id : null;
+                }).filter(id => id !== null);
+                
+                if (symptomIds.length === 0) {
+                    resultsDiv.innerHTML = '<p>❌ Symptoms not found in database</p>';
+                    return;
+                }
+                
+                // Get advice
+                const response = await fetch(`${API_BASE}/advice.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symptoms: symptomIds })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.advice && data.advice.length > 0) {
+                    resultsDiv.innerHTML = `
+                        <h4>✅ Results for: ${symptomNames.join(', ')}</h4>
+                        <p><strong>Found ${data.advice.length} relevant advice item(s)</strong></p>
+                        ${data.advice.map(advice => `
+                            <div style="border-left: 3px solid #667eea; padding-left: 10px; margin: 10px 0;">
+                                <strong>${advice.title}</strong><br>
+                                <small>Matches ${advice.matching_symptoms} symptom(s) | 
+                                Score: ${advice.relevance_score} | 
+                                ${advice.symptom_match_percentage}% match</small>
+                            </div>
+                        `).join('')}
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <h4>ℹ️ Results for: ${symptomNames.join(', ')}</h4>
+                        <p><strong>No specific advice found</strong></p>
+                        <p>The system is being strict and only showing highly relevant advice. This means your symptoms don't have strong enough connections to warrant specific recommendations in our database.</p>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p>❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Load symptoms when page loads
+        loadSymptoms();
+    </script>
+</body>
+</html>

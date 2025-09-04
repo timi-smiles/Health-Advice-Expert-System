@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>Testing Health Expert APIs</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testAPIs() {
+            const results = document.getElementById('results');
+            
+            try {
+                // Test symptoms API
+                results.innerHTML += '<h3>Testing Symptoms API...</h3>';
+                const symptomsResponse = await fetch('/health-expert/backend/api/symptoms.php');
+                const symptomsData = await symptomsResponse.json();
+                results.innerHTML += '<p>Symptoms API: ' + (symptomsData.success ? '✓ Working' : '✗ Failed') + '</p>';
+                results.innerHTML += '<pre>' + JSON.stringify(symptomsData, null, 2) + '</pre>';
+                
+                // Test advice API
+                results.innerHTML += '<h3>Testing Advice API...</h3>';
+                const adviceResponse = await fetch('/health-expert/backend/api/advice.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({symptoms: [1, 2]})
+                });
+                const adviceData = await adviceResponse.json();
+                results.innerHTML += '<p>Advice API: ' + (adviceData.success ? '✓ Working' : '✗ Failed') + '</p>';
+                results.innerHTML += '<pre>' + JSON.stringify(adviceData, null, 2) + '</pre>';
+                
+            } catch (error) {
+                results.innerHTML += '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        }
+        
+        testAPIs();
+    </script>
+</body>
+</html>

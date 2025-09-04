@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi-Symptom Expert System Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .test-case { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #007bff; }
+        .test-case h3 { color: #007bff; margin-top: 0; }
+        .symptoms { background: #e3f2fd; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .results { background: #f1f8e9; padding: 15px; border-radius: 4px; margin: 10px 0; }
+        .emergency { border-left-color: #dc3545; }
+        .emergency h3 { color: #dc3545; }
+        .high { border-left-color: #fd7e14; }
+        .high h3 { color: #fd7e14; }
+        .medium { border-left-color: #ffc107; }
+        .medium h3 { color: #ffc107; }
+        button { padding: 12px 24px; margin: 10px 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .loading { color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>🩺 Multi-Symptom Expert System Analysis</h1>
+    <p>Testing how the expert system handles complex multi-symptom combinations:</p>
+
+    <div class="test-case emergency" id="test1">
+        <h3>Cardiovascular Emergency (4 symptoms)</h3>
+        <div class="symptoms">
+            <strong>Symptoms:</strong> Chest pain + Heart palpitations + Shortness of breath + Dizziness
+        </div>
+        <button onclick="testSymptoms([1,2,3,8], 'test1-results')">Test Emergency Case</button>
+        <div id="test1-results" class="results" style="display:none;"></div>
+    </div>
+
+    <div class="test-case high" id="test2">
+        <h3>Respiratory Syndrome (5 symptoms)</h3>
+        <div class="symptoms">
+            <strong>Symptoms:</strong> Persistent cough + Sore throat + Runny nose + Fever + Body aches
+        </div>
+        <button onclick="testSymptoms([6,9,10,34,36], 'test2-results')">Test Respiratory Case</button>
+        <div id="test2-results" class="results" style="display:none;"></div>
+    </div>
+
+    <div class="test-case medium" id="test3">
+        <h3>Gastrointestinal Complex (6 symptoms)</h3>
+        <div class="symptoms">
+            <strong>Symptoms:</strong> Severe abdominal pain + Nausea + Vomiting + Diarrhea + Fever + Fatigue
+        </div>
+        <button onclick="testSymptoms([13,14,15,16,34,21], 'test3-results')">Test GI Case</button>
+        <div id="test3-results" class="results" style="display:none;"></div>
+    </div>
+
+    <div class="test-case medium" id="test4">
+        <h3>Neurological Assessment (4 symptoms)</h3>
+        <div class="symptoms">
+            <strong>Symptoms:</strong> Severe headache + Dizziness + Vision changes + Memory problems
+        </div>
+        <button onclick="testSymptoms([7,8,12,9], 'test4-results')">Test Neurological Case</button>
+        <div id="test4-results" class="results" style="display:none;"></div>
+    </div>
+
+    <div class="test-case medium" id="test5">
+        <h3>Musculoskeletal Complex (5 symptoms)</h3>
+        <div class="symptoms">
+            <strong>Symptoms:</strong> Back pain + Joint pain + Muscle weakness + Neck stiffness + Bone pain
+        </div>
+        <button onclick="testSymptoms([20,21,22,23,24], 'test5-results')">Test Musculoskeletal Case</button>
+        <div id="test5-results" class="results" style="display:none;"></div>
+    </div>
+
+    <div class="test-case medium" id="test6">
+        <h3>Endocrine/Metabolic (6 symptoms)</h3>
+        <div class="symptoms">
+            <strong>Symptoms:</strong> Excessive thirst + Frequent urination + Unexplained weight loss + Extreme fatigue + Vision changes + Frequent infections
+        </div>
+        <button onclick="testSymptoms([24,25,19,21,12,50], 'test6-results')">Test Endocrine Case</button>
+        <div id="test6-results" class="results" style="display:none;"></div>
+    </div>
+
+    <script>
+        async function testSymptoms(symptomIds, resultsId) {
+            const resultsDiv = document.getElementById(resultsId);
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">🔄 Analyzing symptom combination...</div>';
+            
+            try {
+                const response = await fetch('/health-expert/backend/api/advice.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({symptoms: symptomIds})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    let html = `
+                        <h4>📊 Analysis Results:</h4>
+                        <p><strong>Overall Severity:</strong> <span style="color: ${getSeverityColor(data.overall_severity)}">${data.overall_severity.toUpperCase()}</span></p>
+                        <p><strong>Advice Entries Found:</strong> ${data.advice.length}</p>
+                        <p><strong>Emergency Warning:</strong> ${data.emergency_warning ? '⚠️ YES' : '✅ NO'}</p>
+                        <hr>
+                        <h4>🎯 Top Recommendations:</h4>
+                    `;
+                    
+                    data.advice.slice(0, 3).forEach((advice, index) => {
+                        html += `
+                            <div style="margin: 15px 0; padding: 10px; background: white; border-radius: 4px;">
+                                <h5>${index + 1}. ${advice.title}</h5>
+                                <p><strong>Severity:</strong> ${advice.severity_level}</p>
+                                <p><strong>Recommendation:</strong> ${advice.recommendation}</p>
+                                ${advice.emergency_signs ? `<p><strong>⚠️ Emergency Signs:</strong> ${advice.emergency_signs}</p>` : ''}
+                            </div>
+                        `;
+                    });
+                    
+                    html += `<p><em>System analyzed ${symptomIds.length} symptoms and provided ${data.advice.length} relevant recommendations.</em></p>`;
+                    resultsDiv.innerHTML = html;
+                } else {
+                    resultsDiv.innerHTML = `<div style="color: red;">❌ Error: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div style="color: red;">❌ Connection Error: ${error.message}</div>`;
+            }
+        }
+        
+        function getSeverityColor(severity) {
+            switch(severity) {
+                case 'emergency': return '#dc3545';
+                case 'high': return '#fd7e14';
+                case 'medium': return '#ffc107';
+                case 'low': return '#28a745';
+                default: return '#6c757d';
+            }
+        }
+    </script>
+</body>
+</html>

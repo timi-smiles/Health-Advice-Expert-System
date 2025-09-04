@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Expert - Simple Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        button { padding: 10px 20px; margin: 10px 0; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .result { background: #f8f9fa; padding: 15px; margin: 15px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🩺 Health Expert System - Simple Test</h1>
+        
+        <button onclick="testSymptoms()">Load Symptoms</button>
+        <button onclick="testAdvice()">Get Sample Advice</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function testSymptoms() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Loading symptoms...</p>';
+            
+            try {
+                const response = await fetch('/health-expert/backend/api/symptoms.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    let html = '<div class="result"><h3>✅ Symptoms Loaded Successfully!</h3>';
+                    html += '<p>Found ' + data.symptoms.length + ' symptoms:</p><ul>';
+                    data.symptoms.slice(0, 5).forEach(symptom => {
+                        html += '<li>' + symptom.name + ' (' + symptom.category + ')</li>';
+                    });
+                    html += '</ul></div>';
+                    results.innerHTML = html;
+                } else {
+                    results.innerHTML = '<div class="result">❌ Failed to load symptoms</div>';
+                }
+            } catch (error) {
+                results.innerHTML = '<div class="result">❌ Connection Error: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testAdvice() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Getting health advice...</p>';
+            
+            try {
+                const response = await fetch('/health-expert/backend/api/advice.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({symptoms: [1, 2, 3]}) // headache, fever, cough
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    let html = '<div class="result"><h3>✅ Health Advice Retrieved!</h3>';
+                    html += '<p><strong>Overall Severity:</strong> ' + data.overall_severity + '</p>';
+                    data.advice.forEach(advice => {
+                        html += '<h4>' + advice.title + '</h4>';
+                        html += '<p>' + advice.recommendation + '</p>';
+                    });
+                    html += '</div>';
+                    results.innerHTML = html;
+                } else {
+                    results.innerHTML = '<div class="result">❌ Failed to get advice: ' + data.message + '</div>';
+                }
+            } catch (error) {
+                results.innerHTML = '<div class="result">❌ Connection Error: ' + error.message + '</div>';
+            }
+        }
+    </script>
+</body>
+</html>
