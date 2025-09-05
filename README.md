@@ -1,101 +1,224 @@
-# Health Advice Expert System
+# Health Advice Expert System - Chatbot
 
-A web-based expert system that provides basic health advice based on user-input symptoms. The system uses a knowledge base of symptoms and recommended actions stored in a MySQL database, with a PHP backend and a clean HTML/CSS/JavaScript frontend.
+An intelligent chatbot-based health advice system that provides personalized health recommendations through natural language conversation. Users can describe their symptoms in plain English, and the system provides relevant, evidence-based advice using advanced symptom analysis and expert system logic.
 
-## Features
+## 🚀 Features
 
-- **Intuitive Symptom Selection**: Smart autocomplete search for symptoms
-- **Expert System Logic**: AI-like reasoning based on symptom combinations
-- **Severity Assessment**: Automatic evaluation of symptom severity
-- **Emergency Detection**: Identifies potentially serious conditions
-- **Responsive Design**: Works on desktop and mobile devices
-- **Real-time Advice**: Instant health recommendations
-- **Professional UI**: Clean, medical-grade interface
+- **💬 Natural Language Processing**: Describe symptoms in your own words
+- **🤖 Intelligent Chatbot Interface**: Conversational health advice experience  
+- **🎯 Smart Symptom Detection**: Automatically identifies symptoms from user text
+- **📊 Weighted Scoring System**: Advanced relevance filtering for precise advice
+- **⚡ Real-time Responses**: Instant health recommendations
+- **📱 Responsive Design**: Works seamlessly on desktop and mobile
+- **🔒 Privacy-Focused**: No personal data storage, secure conversations
+- **✨ Clean Interface**: Modern, user-friendly chatbot design
 
-## System Architecture
+## 🏗️ System Architecture
 
 ```
 Health-Advice-Expert-System/
-├── frontend/                 # Client-side application
-│   ├── index.html           # Main application page
-│   ├── css/
-│   │   └── styles.css       # Responsive styling
-│   └── js/
-│       └── app.js           # Frontend logic & API calls
-├── backend/                 # Server-side application
-│   ├── api/                 # REST API endpoints
-│   │   ├── symptoms.php     # Symptom management API
-│   │   └── advice.php       # Health advice API
+├── chatbot.html             # Main chatbot interface
+├── js/
+│   └── chatbot.js          # Chatbot frontend logic
+├── backend/                # Server-side application
+│   ├── api/
+│   │   ├── chatbot.php     # Main chatbot API endpoint
+│   │   ├── advice.php      # Health advice API
+│   │   ├── symptoms.php    # Symptom management API
+│   │   └── status.php      # System status API
 │   ├── config/
-│   │   └── database.php     # Database configuration
+│   │   └── database.php    # Database configuration
 │   ├── models/
 │   │   └── ExpertSystem.php # Core expert system logic
-│   └── setup.php            # Database setup script
+│   └── setup.php           # Database setup script
 └── database/
-    └── schema.sql           # Database schema & sample data
+    ├── enhanced_schema.sql  # Complete database schema
+    ├── schema.sql          # Basic schema
+    └── symptom_advice_relationships.sql # Relationship mappings
 ```
 
-## Prerequisites
+## 📋 Prerequisites
 
-- **Web Server**: Apache/Nginx with PHP support
+- **Web Server**: Apache/Nginx with PHP support (XAMPP recommended)
 - **PHP**: Version 7.4 or higher
 - **MySQL**: Version 5.7 or higher (or MariaDB 10.2+)
 - **Web Browser**: Modern browser with JavaScript enabled
 
-## Installation Guide
+## 🛠️ Installation Guide
 
 ### 1. Environment Setup
 
 #### Option A: XAMPP (Recommended for Development)
 1. Download and install [XAMPP](https://www.apachefriends.org/)
-2. Start Apache and MySQL services
-3. Place project folder in `htdocs` directory
+2. Start Apache and MySQL services from XAMPP Control Panel
+3. Place project folder in `htdocs` directory (usually `C:\xampp\htdocs\`)
 
 #### Option B: Manual Setup
-1. Install Apache/Nginx, PHP, and MySQL
+1. Install Apache/Nginx, PHP 7.4+, and MySQL 5.7+
 2. Configure web server to serve PHP files
-3. Ensure MySQL is running
+3. Ensure MySQL is running and accessible
 
-### 2. Database Configuration
+### 2. Database Setup
 
-1. **Update Database Credentials**:
-   Edit `backend/config/database.php`:
-   ```php
-   private $host = 'localhost';         // Your MySQL host
-   private $db_name = 'health_expert_system';
-   private $username = 'your_username'; // Your MySQL username
-   private $password = 'your_password'; // Your MySQL password
+1. **Import Database Schema**:
+   ```bash
+   # Using MySQL command line
+   mysql -u root -p -e "CREATE DATABASE health_expert_system;"
+   mysql -u root -p health_expert_system < database/enhanced_schema.sql
    ```
 
-2. **Run Database Setup**:
+2. **Update Database Configuration**:
+   Edit `backend/config/database.php` if needed:
+   ```php
+   private $host = 'localhost';
+   private $db_name = 'health_expert_system';
+   private $username = 'root';        // Default XAMPP username
+   private $password = '';            // Default XAMPP password (empty)
+   ```
+
+3. **Run Setup Script** (Optional):
    ```bash
    cd backend
    php setup.php
    ```
 
-   Or manually import the database:
-   ```sql
-   mysql -u username -p < database/schema.sql
-   ```
+### 3. Access the Chatbot
 
-### 3. File Permissions
+1. **Start XAMPP Services**: Apache and MySQL
+2. **Navigate to**: `http://localhost/ENT-STREAM2-PROJECT/chatbot.html`
+3. **Start Chatting**: Type your symptoms in natural language
 
-Ensure proper permissions for PHP to read/write:
-```bash
-chmod -R 755 backend/
-chmod -R 644 frontend/
+## 💬 Usage Guide
+
+### Basic Usage
+1. Open the chatbot in your web browser
+2. Type your symptoms naturally, for example:
+   - "I have a headache and feel tired"
+   - "My stomach hurts after eating"
+   - "I've been coughing for 2 days"
+3. The system will analyze your symptoms and provide relevant advice
+4. Continue the conversation for more specific guidance
+
+### Sample Conversations
+
+**Example 1:**
+```
+User: "I have a headache and feel nauseous"
+Bot: "I understand you're experiencing headache and nausea. Here's some advice..."
 ```
 
-### 4. Web Server Configuration
-
-#### Apache (.htaccess)
-Create `.htaccess` in project root:
-```apache
-RewriteEngine On
-RewriteRule ^api/(.*)$ backend/api/$1 [L]
+**Example 2:**
+```
+User: "My throat is sore and I have a fever"
+Bot: "I can help with sore throat and fever symptoms. Here are my recommendations..."
 ```
 
-#### Nginx
+## 🔧 Technical Details
+
+### Expert System Logic
+- **Natural Language Processing**: Extracts symptoms from user text
+- **Weighted Scoring**: Each symptom-advice pair has relevance weights
+- **Smart Filtering**: Returns only the most relevant advice (minimum score: 1.0)
+- **Relevance Ranking**: Orders advice by symptom matches and relevance scores
+
+### Database Structure
+- **79 Symptoms**: Comprehensive symptom database
+- **110 Advice Entries**: Evidence-based health recommendations  
+- **248 Relationships**: Symptom-advice mappings with weights
+- **Weighted Scoring**: Advanced relevance calculation system
+
+### API Endpoints
+- `POST /backend/api/chatbot.php` - Main chatbot conversation endpoint
+- `GET /backend/api/symptoms.php` - Retrieve all symptoms
+- `GET /backend/api/advice.php` - Retrieve advice by symptom IDs
+- `GET /backend/api/status.php` - System health check
+
+## 🏥 Medical Disclaimer
+
+⚠️ **IMPORTANT MEDICAL DISCLAIMER** ⚠️
+
+This chatbot provides **general health information only** and is **NOT a substitute for professional medical advice, diagnosis, or treatment**. 
+
+- Always consult with qualified healthcare professionals for medical concerns
+- Seek immediate medical attention for serious or emergency symptoms
+- Do not delay seeking medical care based on information from this system
+- This system is for educational and informational purposes only
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Issue**: "Database connection failed"
+- **Solution**: Check MySQL is running and credentials in `database.php` are correct
+
+**Issue**: "Symptoms not detected"  
+- **Solution**: Try rephrasing symptoms or use simpler language
+
+**Issue**: "No advice found"
+- **Solution**: System may not have advice for that specific symptom combination
+
+**Issue**: Chatbot not loading
+- **Solution**: Ensure Apache is running and check browser console for errors
+
+### Debug Mode
+Add to chatbot.js for debugging:
+```javascript
+const DEBUG_MODE = true; // Enable console logging
+```
+
+## 📊 System Requirements
+
+### Minimum Requirements
+- **RAM**: 512MB available memory
+- **Storage**: 50MB disk space  
+- **PHP Memory**: 128MB (php.ini: `memory_limit = 128M`)
+- **Database**: MySQL 5.7+ or MariaDB 10.2+
+
+### Recommended Requirements  
+- **RAM**: 1GB+ available memory
+- **Storage**: 100MB+ disk space
+- **PHP Memory**: 256MB+ 
+- **Connection**: Stable internet connection
+
+## 🚀 Deployment
+
+### Production Deployment
+1. Upload files to your web server
+2. Configure database connection for production
+3. Set proper file permissions (755 for directories, 644 for files)
+4. Configure SSL certificate for HTTPS
+5. Update any hardcoded localhost URLs
+
+### Security Considerations
+- Use HTTPS in production
+- Implement rate limiting for API endpoints
+- Sanitize all user inputs (already implemented)
+- Regular database backups
+- Keep PHP and MySQL updated
+
+## 📝 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit changes (`git commit -am 'Add new feature'`)
+4. Push to branch (`git push origin feature/new-feature`)
+5. Create a Pull Request
+
+## 📞 Support
+
+For technical support or questions about the Health Advice Expert System:
+
+- **GitHub Issues**: [Report bugs or request features](https://github.com/timi-smiles/Health-Advice-Expert-System/issues)
+- **Documentation**: Check this README for detailed setup instructions
+- **Community**: Join discussions in the repository discussions section
+
+---
+
+**Made with ❤️ for better health awareness and education**
 Add to server configuration:
 ```nginx
 location /api/ {

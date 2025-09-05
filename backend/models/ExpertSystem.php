@@ -103,10 +103,10 @@ class ExpertSystem {
             $placeholders = str_repeat('?,', count($symptomIds) - 1) . '?';
             
             // Get advice based on symptoms with weighted scoring
-            // Only return highly relevant advice - be very strict
+            // Simple but effective filtering
             $symptomCount = count($symptomIds);
-            $minRelevanceScore = max(4, $symptomCount * 3); // Higher minimum relevance threshold
-            $minMatchingSymptoms = $symptomCount >= 3 ? 2 : 1; // At least 2 symptoms must match if 3+ selected
+            $minRelevanceScore = 1; // Very low threshold to ensure relevant advice shows
+            $minMatchingSymptoms = 1; // At least 1 symptom must match
             
             $query = "SELECT 
                         a.id,
@@ -124,30 +124,26 @@ class ExpertSystem {
                      INNER JOIN symptom_advice sa ON a.id = sa.advice_id
                      WHERE sa.symptom_id IN ($placeholders)
                      GROUP BY a.id, a.severity_level
-                     HAVING (relevance_score >= ? AND matching_symptoms >= ?)
-                        OR (a.severity_level = 'emergency' AND matching_symptoms >= 1)
-                        OR (a.severity_level = 'high' AND matching_symptoms >= ? AND relevance_score >= ?)
+                     HAVING relevance_score >= ? AND matching_symptoms >= ?
                      ORDER BY 
+                        matching_symptoms DESC,
+                        relevance_score DESC,
                         CASE a.severity_level 
                             WHEN 'emergency' THEN 4 
                             WHEN 'high' THEN 3 
                             WHEN 'medium' THEN 2 
                             ELSE 1 
-                        END DESC,
-                        matching_symptoms DESC,
-                        relevance_score DESC
-                     LIMIT 3"; // Even stricter limit - max 3 advice items
+                        END DESC
+                     LIMIT 2"; // Maximum 2 most relevant advice items
 
             $stmt = $this->conn->prepare($query);
             
-            // Bind parameters with stricter thresholds
+            // Bind parameters with reasonable thresholds
             $params = array_merge(
                 [$symptomCount], // For percentage calculation
                 $symptomIds,     // For WHERE clause
-                [$minRelevanceScore], // Main relevance threshold
-                [$minMatchingSymptoms], // Main matching symptoms threshold
-                [$minMatchingSymptoms], // High severity matching symptoms threshold
-                [max(2, $minRelevanceScore - 2)] // High severity relevance threshold (slightly lower)
+                [$minRelevanceScore], // Main relevance threshold (much lower)
+                [$minMatchingSymptoms] // Minimum matching symptoms
             );
             
             $stmt->execute($params);
